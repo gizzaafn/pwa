@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <title>Toko Aksesoris Kucing</title>
+</head>
+<body>
+  <header>
+    <h1>Toko Aksesoris Kucing</h1>
+  </header>
+  <main>
+    <section id="product-list">
+      <!-- Produk akan ditambahkan secara dinamis -->
+    </section>
+    <section id="cart">
+      <h2>Keranjang Belanja</h2>
+      <ul id="cart-items"></ul>
+      <p>Total: <span id="total-price">0</span> IDR</p>
+      <button id="checkout-btn">Checkout</button>
+    </section>
+    <section id="payment" style="display: none;">
+      <h2>Pembayaran</h2>
+      <label for="payment-amount">Masukkan Nominal Pembayaran:</label>
+      <input type="number" id="payment-amount" />
+      <button id="pay-btn">Bayar</button>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
