@@ -1,265 +1,450 @@
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>
-   Toko Perlengkapan dan Aksesoris Kucing
-  </title>
-  <script src="https://cdn.tailwindcss.com">
-  </script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet"/>
-  <script>
-   document.addEventListener('DOMContentLoaded', function() {
-            const cart = [];
-            const cartButtons = document.querySelectorAll('.add-to-cart');
-            const cartList = document.getElementById('cart-list');
-            const totalPriceElement = document.getElementById('total-price');
-            const paymentForm = document.getElementById('payment-form');
-            const popupNotification = document.getElementById('popup-notification');
-            const popupMessage = document.getElementById('popup-message');
-
-            cartButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const product = {
-                        name: this.dataset.name,
-                        price: parseInt(this.dataset.price)
-                    };
-                    cart.push(product);
-                    updateCart();
-                });
-            });
-
-            paymentForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const amount = parseInt(document.getElementById('amount').value);
-                const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
-
-                if (amount >= totalPrice) {
-                    const change = amount - totalPrice;
-                    if (change > 0) {
-                        popupMessage.textContent = `Pembayaran Berhasil! Kembalian Anda: Rp ${change}`;
-                    } else {
-                        popupMessage.textContent = 'Pembayaran Berhasil!';
-                    }
-                    popupNotification.classList.remove('hidden');
-                    cart.length = 0; // Kosongkan keranjang
-                    updateCart(); // Perbarui tampilan keranjang
-                    document.getElementById('amount').value = ''; // Kosongkan input pembayaran
-                } else {
-                    popupMessage.textContent = `Uang kurang! Anda masih perlu Rp ${totalPrice - amount}`;
-                    popupNotification.classList.remove('hidden');
-                }
-            });
-
-            function updateCart() {
-                cartList.innerHTML = '';
-                let totalPrice = 0;
-                cart.forEach((item, index) => {
-                    const li = document.createElement('li');
-                    li.textContent = `${item.name} - Rp ${item.price}`;
-                    const removeButton = document.createElement('button');
-                    removeButton.textContent = 'Hapus';
-                    removeButton.className = 'bg-red-500 text-white px-2 py-1 rounded ml-2';
-                    removeButton.addEventListener('click', function() {
-                        cart.splice(index, 1); // Hapus item dari keranjang
-                        updateCart(); // Perbarui tampilan keranjang
-                    });
-                    li.appendChild(removeButton);
-                    cartList.appendChild(li);
-                    totalPrice += item.price;
-                });
-                totalPriceElement.textContent = `Total: Rp ${totalPrice}`;
-            }
-        });
-   //Service worker
-        if ("serviceWorker" in navigator) {
-          window.addEventListener("load", () => {
-            navigator.serviceWorker
-              .register("/service-worker.js")
-              .then((registration) => {
-                console.log(
-                  "ServiceWorker registration successful with scope: ",
-                   registration.scope
-                );
-              })
-              .catch((error) => {
-                console.log("ServiceWorker registration failed: ", error);
-              });
-          });
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Toko Perlengkapan dan Aksesoris Kucing</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1a202c" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Toko Kucing" />
+    <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <!-- Taruh setelah link stylesheet yang sudah ada, sebelum </head> -->
+    <style>
+      /* Efek Ripple untuk tombol */
+      .ripple {
+        position: relative;
+        overflow: hidden;
+        transform: translate3d(0, 0, 0);
       }
-  </script>
- </head>
- <body class="bg-gray-100 font-roboto">
-  <header class="bg-gray-900 text-white p-4">
-   <div class="container mx-auto flex justify-between items-center">
-    <div class="text-2xl font-bold">
-     Toko Perlengkapan dan Aksesoris Kucing
+
+      .ripple:after {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+        background-repeat: no-repeat;
+        background-position: 50%;
+        transform: scale(10, 10);
+        opacity: 0;
+        transition: transform 0.5s, opacity 1s;
+      }
+
+      .ripple:active:after {
+        transform: scale(0, 0);
+        opacity: 0.3;
+        transition: 0s;
+      }
+
+      /* Efek hover untuk card produk */
+      .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Efek active untuk card */
+      .product-card:active {
+        transform: scale(0.98);
+      }
+
+      /* Animasi loading */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* Tambahkan ke bagian style di head */
+      .cart-slide-in {
+        transform: translateX(0) !important;
+      }
+
+      .cart-item {
+        @apply flex items-center justify-between p-2 bg-gray-50 rounded;
+      }
+
+      .cart-item-info {
+        @apply flex-grow;
+      }
+
+      .cart-item-actions {
+        @apply flex items-center space-x-2;
+      }
+
+      /* Animasi untuk cart count */
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.2);
+        }
+      }
+
+      .cart-count-update {
+        animation: bounce 0.3s;
+      }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const cart = [];
+        const cartButtons = document.querySelectorAll(".add-to-cart");
+        const cartList = document.getElementById("cart-list");
+        const totalPriceElement = document.getElementById("total-price");
+        const paymentForm = document.getElementById("payment-form");
+        const popupNotification = document.getElementById("popup-notification");
+        const popupMessage = document.getElementById("popup-message");
+
+        cartButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const product = {
+              name: this.dataset.name,
+              price: parseInt(this.dataset.price),
+            };
+            cart.push(product);
+            updateCart();
+          });
+        });
+
+        paymentForm.addEventListener("submit", function (event) {
+          event.preventDefault();
+          const amount = parseInt(document.getElementById("amount").value);
+          const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+
+          if (amount >= totalPrice) {
+            const change = amount - totalPrice;
+            if (change > 0) {
+              popupMessage.textContent = `Pembayaran Berhasil! Kembalian Anda: Rp ${change}`;
+            } else {
+              popupMessage.textContent = "Pembayaran Berhasil!";
+            }
+            popupNotification.classList.remove("hidden");
+            cart.length = 0; // Kosongkan keranjang
+            updateCart(); // Perbarui tampilan keranjang
+            document.getElementById("amount").value = ""; // Kosongkan input pembayaran
+          } else {
+            popupMessage.textContent = `Uang kurang! Anda masih perlu Rp ${
+              totalPrice - amount
+            }`;
+            popupNotification.classList.remove("hidden");
+          }
+        });
+
+        function updateCart() {
+          cartList.innerHTML = "";
+          let totalPrice = 0;
+          cart.forEach((item, index) => {
+            const li = document.createElement("li");
+            li.textContent = `${item.name} - Rp ${item.price}`;
+            const removeButton = document.createElement("button");
+            removeButton.textContent = "Hapus";
+            removeButton.className =
+              "bg-red-500 text-white px-2 py-1 rounded ml-2";
+            removeButton.addEventListener("click", function () {
+              cart.splice(index, 1); // Hapus item dari keranjang
+              updateCart(); // Perbarui tampilan keranjang
+            });
+            li.appendChild(removeButton);
+            cartList.appendChild(li);
+            totalPrice += item.price;
+          });
+          totalPriceElement.textContent = `Total: Rp ${totalPrice}`;
+        }
+      });
+      //Service worker
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then((registration) => {
+              console.log(
+                "ServiceWorker registration successful with scope: ",
+                registration.scope
+              );
+            })
+            .catch((error) => {
+              console.log("ServiceWorker registration failed: ", error);
+            });
+        });
+      }
+    </script>
+  </head>
+  <body class="bg-gray-100 font-roboto">
+    <header class="bg-gray-900 text-white p-4 sticky top-0 z-50 shadow-lg">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="text-2xl font-bold">
+          Toko Perlengkapan dan Aksesoris Kucing
+        </div>
+        <nav class="space-x-4">
+          <a class="hover:underline" href="#"> </a>
+          <a class="hover:underline" href="#"> </a>
+          <a class="hover:underline" href="#"> </a>
+          <a class="hover:underline" href="#"> </a>
+        </nav>
+      </div>
+    </header>
+    <main class="container mx-auto p-4">
+      <section class="mb-8">
+        <h2 class="text-3xl font-bold mb-4">Produk yang Tersedia</h2>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+        >
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A stylish cat collar with a bell"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://storage.googleapis.com/a1aa/image/2SB1qqRwLe2ev0xCx5p4ykakSQfgsOLGrk4GRDYr4gtSASDoA.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Kalung Kucing</h3>
+            <p class="text-gray-700">Rp 50,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Kalung Kucing"
+              data-price="50000"
+            >
+              + Keranjang
+            </button>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A cozy cat bed in a soft fabric"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://storage.googleapis.com/a1aa/image/I4s9MUssgd6UNxKGq5F9myYTsPO1gzPV6VCHZnIr0sGDQaAF.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Tempat Tidur Kucing</h3>
+            <p class="text-gray-700">Rp 150,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Tempat Tidur Kucing"
+              data-price="150000"
+            >
+              + Keranjang
+            </button>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A set of colorful cat toys"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://storage.googleapis.com/a1aa/image/KfJ98WTDYJzAJaZ7yfkm3PXeVBqcChe8J4Cfft7z8ln9CQaAF.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Mainan Bulu Kucing</h3>
+            <p class="text-gray-700">Rp 15,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Mainan Bulu Kucing"
+              data-price="15000"
+            >
+              + Keranjang
+            </button>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A cat scratching post with multiple levels"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://storage.googleapis.com/a1aa/image/GcYVpZIIk9a6B1fqzVwpFODsjXn9nXRPt54fehcagKfeAINgC.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Cat Scratching Post</h3>
+            <p class="text-gray-700">Rp 200,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Cat Scratching Post"
+              data-price="200000"
+            >
+              + Keranjang
+            </button>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A cat grooming kit with various brushes and combs"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://storage.googleapis.com/a1aa/image/l4QizLZPLvZcLhVHU80g8pur89HODq5hI1iXBHa7i1R5QaAF.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Kit Perawatan Kucing</h3>
+            <p class="text-gray-700">Rp 100,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Kit Perawatan Kucing"
+              data-price="100000"
+            >
+              + Keranjang
+            </button>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A cat water fountain with a continuous flow of water"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://i.pinimg.com/736x/d8/57/d5/d857d5fd2701cf843b15adc47fb76ed0.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Water Fountain</h3>
+            <p class="text-gray-700">Rp 250,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Air Mancur Kucing"
+              data-price="250000"
+            >
+              + Keranjang
+            </button>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A cat harness and leash set for outdoor walks"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://storage.googleapis.com/a1aa/image/iVtZJoPJTaL3AtnIood5sQ8I6yfe7Arx9LqYu8f4PlEeNkGQB.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Tali Kucing</h3>
+            <p class="text-gray-700">Rp 75,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Tali Kekang Kucing"
+              data-price="75000"
+            >
+              + Keranjang
+            </button>
+          </div>
+          <div class="bg-white p-4 rounded-lg shadow-md">
+            <img
+              alt="A cat litter box with a scoop"
+              class="w-full h-48 object-cover rounded-t-lg"
+              height="300"
+              src="https://storage.googleapis.com/a1aa/image/jZL5Uk9DW551P5CSpGXGIVoGRg9jSy7NVHerG5sN3Cowh0AKA.jpg"
+              width="300"
+            />
+            <h3 class="text-xl font-bold mt-2">Litter Box Kucing</h3>
+            <p class="text-gray-700">Rp 120,000</p>
+            <button
+              class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
+              data-name="Kotak Pasir Kucing"
+              data-price="120000"
+            >
+              + Keranjang
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="mb-8">
+        <h2 class="text-3xl font-bold mb-4">Keranjang</h2>
+        <ul class="bg-white p-4 rounded-lg shadow-md" id="cart-list"></ul>
+        <div class="text-xl font-bold mt-4" id="total-price">Total: Rp 0</div>
+      </section>
+      <section class="mb-8">
+        <h2 class="text-3xl font-bold mb-4">Pembayaran</h2>
+        <form class="bg-white p-4 rounded-lg shadow-md" id="payment-form">
+          <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2" for="amount">
+              Masukkan Total Harga (Rp):
+            </label>
+            <input
+              class="w-full p-2 border border-gray-300 rounded"
+              id="amount"
+              name="amount"
+              placeholder="e.g., 100000"
+              type="number"
+            />
+          </div>
+          <button
+            class="bg-green-500 text-white px-4 py-2 rounded"
+            type="submit"
+          >
+            Bayar
+          </button>
+        </form>
+        <div
+          class="mt-4 text-green-500 font-bold hidden"
+          id="payment-notification"
+        ></div>
+      </section>
+
+    </main>
+    <footer class="bg-gray-900 text-white p-4 mt-8">
+      <div class="container mx-auto text-center">
+        <p>© 2024 Cat Accessories Store.</p>
+      </div>
+    </footer>
+    <div
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden"
+      id="popup-notification"
+    >
+      <div class="bg-white p-4 rounded-lg shadow-md text-center">
+        <p class="text-xl font-bold" id="popup-message"></p>
+        <button
+          class="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+          onclick="document.getElementById('popup-notification').classList.add('hidden')"
+        >
+          OK
+        </button>
+      </div>
     </div>
-    <nav class="space-x-4">
-     <a class="hover:underline" href="#">
-      
-     </a>
-     <a class="hover:underline" href="#">
-  
-     </a>
-     <a class="hover:underline" href="#">
-      
-     </a>
-     <a class="hover:underline" href="#">
-      
-     </a>
-    </nav>
-   </div>
-  </header>
-  <main class="container mx-auto p-4">
-   <section class="mb-8">
-    <h2 class="text-3xl font-bold mb-4">
-     Produk yang Tersedia
-    </h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A stylish cat collar with a bell" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://storage.googleapis.com/a1aa/image/2SB1qqRwLe2ev0xCx5p4ykakSQfgsOLGrk4GRDYr4gtSASDoA.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Kalung Kucing
-      </h3>
-      <p class="text-gray-700">
-       Rp 50,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Kalung Kucing" data-price="50000">
-       + Keranjang
-      </button>
-     </div>
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A cozy cat bed in a soft fabric" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://storage.googleapis.com/a1aa/image/I4s9MUssgd6UNxKGq5F9myYTsPO1gzPV6VCHZnIr0sGDQaAF.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Tempat Tidur Kucing
-      </h3>
-      <p class="text-gray-700">
-       Rp 150,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Tempat Tidur Kucing" data-price="150000">
-       + Keranjang
-      </button>
-     </div>
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A set of colorful cat toys" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://storage.googleapis.com/a1aa/image/KfJ98WTDYJzAJaZ7yfkm3PXeVBqcChe8J4Cfft7z8ln9CQaAF.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Mainan Bulu Kucing
-      </h3>
-      <p class="text-gray-700">
-       Rp 15,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Mainan Bulu Kucing" data-price="15000">
-      + Keranjang
-      </button>
-     </div>
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A cat scratching post with multiple levels" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://storage.googleapis.com/a1aa/image/GcYVpZIIk9a6B1fqzVwpFODsjXn9nXRPt54fehcagKfeAINgC.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Cat Scratching Post
-      </h3>
-      <p class="text-gray-700">
-       Rp 200,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Cat Scratching Post" data-price="200000">
-       + Keranjang
-      </button>
-     </div>
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A cat grooming kit with various brushes and combs" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://storage.googleapis.com/a1aa/image/l4QizLZPLvZcLhVHU80g8pur89HODq5hI1iXBHa7i1R5QaAF.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Kit Perawatan Kucing
-      </h3>
-      <p class="text-gray-700">
-       Rp 100,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Kit Perawatan Kucing" data-price="100000">
-       + Keranjang
-      </button>
-     </div>
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A cat water fountain with a continuous flow of water" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://i.pinimg.com/736x/d8/57/d5/d857d5fd2701cf843b15adc47fb76ed0.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Water Fountain 
-      </h3>
-      <p class="text-gray-700">
-       Rp 250,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Air Mancur Kucing" data-price="250000">
-       + Keranjang
-      </button>
-     </div>
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A cat harness and leash set for outdoor walks" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://storage.googleapis.com/a1aa/image/iVtZJoPJTaL3AtnIood5sQ8I6yfe7Arx9LqYu8f4PlEeNkGQB.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Tali Kucing
-      </h3>
-      <p class="text-gray-700">
-       Rp 75,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Tali Kekang Kucing" data-price="75000">
-       + Keranjang
-      </button>
-     </div>
-     <div class="bg-white p-4 rounded-lg shadow-md">
-      <img alt="A cat litter box with a scoop" class="w-full h-48 object-cover rounded-t-lg" height="300" src="https://storage.googleapis.com/a1aa/image/jZL5Uk9DW551P5CSpGXGIVoGRg9jSy7NVHerG5sN3Cowh0AKA.jpg" width="300"/>
-      <h3 class="text-xl font-bold mt-2">
-       Litter Box Kucing
-      </h3>
-      <p class="text-gray-700">
-       Rp 120,000
-      </p>
-      <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart" data-name="Kotak Pasir Kucing" data-price="120000">
-       + Keranjang
-      </button>
-     </div>
-    </div>
-   </section>
-   <section class="mb-8">
-    <h2 class="text-3xl font-bold mb-4">
-     Keranjang
-    </h2>
-    <ul class="bg-white p-4 rounded-lg shadow-md" id="cart-list">
-    </ul>
-    <div class="text-xl font-bold mt-4" id="total-price">
-     Total: Rp 0
-    </div>
-   </section>
-   <section class="mb-8">
-    <h2 class="text-3xl font-bold mb-4">
-     Pembayaran
-    </h2>
-    <form class="bg-white p-4 rounded-lg shadow-md" id="payment-form">
-     <div class="mb-4">
-      <label class="block text-gray-700 font-bold mb-2" for="amount">
-       Masukkan Total Harga (Rp):
-      </label>
-      <input class="w-full p-2 border border-gray-300 rounded" id="amount" name="amount" placeholder="e.g., 100000" type="number"/>
-     </div>
-     <button class="bg-green-500 text-white px-4 py-2 rounded" type="submit">
-      Bayar
-     </button>
-    </form>
-    <div class="mt-4 text-green-500 font-bold hidden" id="payment-notification">
-    </div>
-   </section>
-  </main>
-  <footer class="bg-gray-900 text-white p-4 mt-8">
-   <div class="container mx-auto text-center">
-    <p>
-     © 2024 Cat Accessories Store.
-    </p>
-   </div>
-  </footer>
-  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden" id="popup-notification">
-   <div class="bg-white p-4 rounded-lg shadow-md text-center">
-    <p class="text-xl font-bold" id="popup-message">
-    </p>
-    <button class="bg-blue-500 text-white px-4 py-2 rounded mt-4" onclick="document.getElementById('popup-notification').classList.add('hidden')">
-     OK
-    </button>
-   </div>
-  </div>
- </body>
+    <script>
+        // Tambahkan efek ripple ke semua tombol
+        document.querySelectorAll('.ripple').forEach(button => {
+          button.addEventListener('click', function(e) {
+            const ripple = document.createElement('div');
+            const rect = button.getBoundingClientRect();
+            
+            ripple.className = 'ripple-effect';
+            ripple.style.left = `${e.clientX - rect.left}px`;
+            ripple.style.top = `${e.clientY - rect.top}px`;
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => {
+              ripple.remove();
+            }, 600);
+          });
+        });
+    
+        // Tambahkan efek loading saat mengklik tombol keranjang
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+          button.addEventListener('click', function() {
+            this.classList.add('pulse');
+            setTimeout(() => {
+              this.classList.remove('pulse');
+            }, 1000);
+          });
+        });
+    </script>
+  </body>
 </html>
