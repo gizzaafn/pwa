@@ -18,9 +18,9 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap"
       rel="stylesheet"
     />
-    <!-- Taruh setelah link stylesheet yang sudah ada, sebelum </head> -->
+   
     <style>
-      /* Efek Ripple untuk tombol */
+    
       .ripple {
         position: relative;
         overflow: hidden;
@@ -50,7 +50,7 @@
         transition: 0s;
       }
 
-      /* Efek hover untuk card produk */
+     
       .product-card {
         transition: transform 0.2s, box-shadow 0.2s;
       }
@@ -60,12 +60,12 @@
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
       }
 
-      /* Efek active untuk card */
+      
       .product-card:active {
         transform: scale(0.98);
       }
 
-      /* Animasi loading */
+     
       @keyframes pulse {
         0% {
           transform: scale(1);
@@ -82,7 +82,7 @@
         animation: pulse 2s infinite;
       }
 
-      /* Tambahkan ke bagian style di head */
+   
       .cart-slide-in {
         transform: translateX(0) !important;
       }
@@ -99,7 +99,7 @@
         @apply flex items-center space-x-2;
       }
 
-      /* Animasi untuk cart count */
+    
       @keyframes bounce {
         0%,
         100% {
@@ -148,9 +148,9 @@
               popupMessage.textContent = "Pembayaran Berhasil!";
             }
             popupNotification.classList.remove("hidden");
-            cart.length = 0; // Kosongkan keranjang
-            updateCart(); // Perbarui tampilan keranjang
-            document.getElementById("amount").value = ""; // Kosongkan input pembayaran
+            cart.length = 0; 
+            updateCart(); 
+            document.getElementById("amount").value = ""; 
           } else {
             popupMessage.textContent = `Uang kurang! Anda masih perlu Rp ${
               totalPrice - amount
@@ -170,8 +170,8 @@
             removeButton.className =
               "bg-red-500 text-white px-2 py-1 rounded ml-2";
             removeButton.addEventListener("click", function () {
-              cart.splice(index, 1); // Hapus item dari keranjang
-              updateCart(); // Perbarui tampilan keranjang
+              cart.splice(index, 1); 
+              updateCart(); 
             });
             li.appendChild(removeButton);
             cartList.appendChild(li);
@@ -418,7 +418,7 @@
       </div>
     </div>
     <script>
-        // Tambahkan efek ripple ke semua tombol
+        
         document.querySelectorAll('.ripple').forEach(button => {
           button.addEventListener('click', function(e) {
             const ripple = document.createElement('div');
@@ -436,7 +436,7 @@
           });
         });
     
-        // Tambahkan efek loading saat mengklik tombol keranjang
+       
         document.querySelectorAll('.add-to-cart').forEach(button => {
           button.addEventListener('click', function() {
             this.classList.add('pulse');
