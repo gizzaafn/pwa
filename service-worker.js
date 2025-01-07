@@ -19,18 +19,21 @@ const STATIC_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap'
 ];
 
-
+// Event Instalasi
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
         console.log('Menyimpan aset statis ke cache');
-        return cache.addAll(STATIC_ASSETS);
+        return cache.addAll(STATIC_ASSETS)
+          .catch(error => {
+            console.error('Gagal menambahkan aset ke cache', error);
+          });
       })
   );
 });
 
-
+// Event Aktivasi
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => {
@@ -43,14 +46,15 @@ self.addEventListener('activate', event => {
   );
 });
 
-
+// Event Fetch
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(cacheRes => {
         return cacheRes || fetch(event.request).then(fetchRes => {
           return caches.open(DYNAMIC_CACHE).then(cache => {
-            if (!/^https?:\/\/fonts/.test(event.request.url)) {
+            const url = new URL(event.request.url);
+            if (url.protocol !== 'chrome-extension:') {
               cache.put(event.request.url, fetchRes.clone());
             }
             return fetchRes;
