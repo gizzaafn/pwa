@@ -18,7 +18,9 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap"
       rel="stylesheet"
     />
-   <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
+    <!-- Taruh setelah link stylesheet yang sudah ada, sebelum </head> -->
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const cart = [];
@@ -34,8 +36,16 @@
             const product = {
               name: this.dataset.name,
               price: parseInt(this.dataset.price),
+              quantity: 1, // Tambahkan properti kuantitas
             };
-            cart.push(product);
+            const existingProduct = cart.find(
+              (item) => item.name === product.name
+            );
+            if (existingProduct) {
+              existingProduct.quantity += 1;
+            } else {
+              cart.push(product);
+            }
             updateCart();
           });
         });
@@ -43,7 +53,10 @@
         paymentForm.addEventListener("submit", function (event) {
           event.preventDefault();
           const amount = parseInt(document.getElementById("amount").value);
-          const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+          const totalPrice = cart.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          );
 
           if (amount >= totalPrice) {
             const change = amount - totalPrice;
@@ -53,9 +66,9 @@
               popupMessage.textContent = "Pembayaran Berhasil!";
             }
             popupNotification.classList.remove("hidden");
-            cart.length = 0; 
-            updateCart(); 
-            document.getElementById("amount").value = ""; 
+            cart.length = 0;
+            updateCart();
+            document.getElementById("amount").value = "";
           } else {
             popupMessage.textContent = `Uang kurang! Anda masih perlu Rp ${
               totalPrice - amount
@@ -69,22 +82,48 @@
           let totalPrice = 0;
           cart.forEach((item, index) => {
             const li = document.createElement("li");
-            li.textContent = `${item.name} - Rp ${item.price}`;
+            li.textContent = `${item.name} - Rp ${item.price} x ${item.quantity}`;
             const removeButton = document.createElement("button");
             removeButton.textContent = "Hapus";
             removeButton.className =
               "bg-red-500 text-white px-2 py-1 rounded ml-2";
             removeButton.addEventListener("click", function () {
-              cart.splice(index, 1); 
-              updateCart(); 
+              cart.splice(index, 1);
+              updateCart();
             });
+
+            const incrementButton = document.createElement("button");
+            incrementButton.textContent = "+";
+            incrementButton.className =
+              "bg-green-500 text-white px-2 py-1 rounded ml-2";
+            incrementButton.addEventListener("click", function () {
+              item.quantity += 1;
+              updateCart();
+            });
+
+            const decrementButton = document.createElement("button");
+            decrementButton.textContent = "-";
+            decrementButton.className =
+              "bg-yellow-500 text-white px-2 py-1 rounded ml-2";
+            decrementButton.addEventListener("click", function () {
+              if (item.quantity > 1) {
+                item.quantity -= 1;
+              } else {
+                cart.splice(index, 1);
+              }
+              updateCart();
+            });
+
+            li.appendChild(incrementButton);
+            li.appendChild(decrementButton);
             li.appendChild(removeButton);
             cartList.appendChild(li);
-            totalPrice += item.price;
+            totalPrice += item.price * item.quantity;
           });
           totalPriceElement.textContent = `Total: Rp ${totalPrice}`;
         }
       });
+
       //Service worker
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
@@ -137,8 +176,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Kalung Kucing"
               data-price="50000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-md">
@@ -155,8 +195,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Tempat Tidur Kucing"
               data-price="150000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-md">
@@ -173,8 +214,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Mainan Bulu Kucing"
               data-price="15000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-md">
@@ -191,8 +233,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Cat Scratching Post"
               data-price="200000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-md">
@@ -209,8 +252,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Kit Perawatan Kucing"
               data-price="100000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-md">
@@ -227,8 +271,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Air Mancur Kucing"
               data-price="250000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-md">
@@ -245,8 +290,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Tali Kekang Kucing"
               data-price="75000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-md">
@@ -263,8 +309,9 @@
               class="bg-blue-500 text-white px-4 py-2 rounded mt-2 add-to-cart"
               data-name="Kotak Pasir Kucing"
               data-price="120000"
+              aria-label="Tambah ke keranjang"
             >
-              + Keranjang
+              Tambahkan ke Keranjang
             </button>
           </div>
         </div>
@@ -301,7 +348,6 @@
           id="payment-notification"
         ></div>
       </section>
-
     </main>
     <footer class="bg-gray-900 text-white p-4 mt-8">
       <div class="container mx-auto text-center">
@@ -323,33 +369,33 @@
       </div>
     </div>
     <script>
-        
-        document.querySelectorAll('.ripple').forEach(button => {
-          button.addEventListener('click', function(e) {
-            const ripple = document.createElement('div');
-            const rect = button.getBoundingClientRect();
-            
-            ripple.className = 'ripple-effect';
-            ripple.style.left = `${e.clientX - rect.left}px`;
-            ripple.style.top = `${e.clientY - rect.top}px`;
-            
-            button.appendChild(ripple);
-            
-            setTimeout(() => {
-              ripple.remove();
-            }, 600);
-          });
+      // Tambahkan efek ripple ke semua tombol
+      document.querySelectorAll(".ripple").forEach((button) => {
+        button.addEventListener("click", function (e) {
+          const ripple = document.createElement("div");
+          const rect = button.getBoundingClientRect();
+
+          ripple.className = "ripple-effect";
+          ripple.style.left = `${e.clientX - rect.left}px`;
+          ripple.style.top = `${e.clientY - rect.top}px`;
+
+          button.appendChild(ripple);
+
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
         });
-    
-       
-        document.querySelectorAll('.add-to-cart').forEach(button => {
-          button.addEventListener('click', function() {
-            this.classList.add('pulse');
-            setTimeout(() => {
-              this.classList.remove('pulse');
-            }, 1000);
-          });
+      });
+
+      // Tambahkan efek loading saat mengklik tombol keranjang
+      document.querySelectorAll(".add-to-cart").forEach((button) => {
+        button.addEventListener("click", function () {
+          this.classList.add("pulse");
+          setTimeout(() => {
+            this.classList.remove("pulse");
+          }, 1000);
         });
+      });
     </script>
   </body>
 </html>
